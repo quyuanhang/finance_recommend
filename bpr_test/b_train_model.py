@@ -29,7 +29,7 @@ testing_data, users_to_index, items_to_index = utils.load_data_from_array(
     test_data, users_to_index, items_to_index)
 
 bpr = bpr.BPR(rank=20, n_users=len(users_to_index),
-              n_items=len(items_to_index), match_weight=1)
+              n_items=len(items_to_index), match_weight=2)
 
 bpr.train(training_data, epochs=2000)
 
@@ -46,7 +46,7 @@ def data_to_dict(training_data, min_rate):
     return train_dict
 
 train_dict = data_to_dict(training_data, 1)
-test_dict = data_to_dict(testing_data, 2)
+test_dict = data_to_dict(testing_data, 1)
 
 def evaluate(recommend_dict, lable_dict, train_dict, top=1000, mode='base'):
     tp, fp, fn = 0, 0, 0
@@ -57,17 +57,18 @@ def evaluate(recommend_dict, lable_dict, train_dict, top=1000, mode='base'):
                               key=lambda x: x[1], reverse=True)
             rec = [j_r[0] for j_r in job_rank if j_r[0] not in train_dict[exp]][:top]
             rec_set = set(rec)
-            positive_set = set(lable_dict[exp].keys())
+            positive_set = set(lable_dict[exp].keys()) - set(train_dict[exp].keys())
             tp += len(rec_set & positive_set)
             fp += len(rec_set - positive_set)
             fn += len(positive_set - rec_set)
-            if mode == 'max':
-                precision = 1 if rec_set & positive_set else 0
-                recall = 1 if rec_set & positive_set else 0
-            else:
-                precision = len(rec_set & positive_set) / len(rec_set)
-                recall = len(rec_set & positive_set) / len(positive_set)
-            precision_recall_list.append([precision, recall])
+            if len(positive_set) > 0:
+                if mode == 'max':
+                    precision = 1 if rec_set & positive_set else 0
+                    recall = 1 if rec_set & positive_set else 0
+                else:
+                    precision = len(rec_set & positive_set) / len(rec_set)
+                    recall = len(rec_set & positive_set) / len(positive_set)
+                precision_recall_list.append([precision, recall])
     if (mode == 'base') or (mode == 'max'):
         df = pd.DataFrame(precision_recall_list, columns=[
                           'precision', 'recall'])

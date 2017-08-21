@@ -19,31 +19,40 @@ def complete_schedual():
     sys.stderr.write("\n")
     sys.stderr.flush()
 
+def combine_data(click_data, view_data):
+    click_dict = dict()
+    for uid, cid in click_data:
+        if uid not in click_dict:
+            click_dict[uid] = dict()
+        click_dict[uid][cid] = 2
+
+    combine_data = list(np.c_[click_data, [2] * len(click_data)])
+    for uid, cid in view_data:
+        if uid in click_dict:
+            if cid not in click_dict[uid]:
+                combine_data.append([uid, cid, 1])
+    return pd.DataFrame(combine_data)
 
 # 数据文件
 view_file = 'input/view_tag/train.csv'
+view_file_test = 'input/view_tag/test.csv'
 click_file = 'input/tag_click/train.csv'
+click_file_test = 'input/tag_click/test.csv'
+
 # 初始化全局变量
 begin = time.time()
 
-
 click_data = pd.read_csv(click_file).drop_duplicates().values
 view_data = pd.read_csv(view_file).drop_duplicates().values
+train_data = combine_data(click_data, view_data)
 
-click_dict = dict()
-for uid, cid in click_data:
-    if uid not in click_dict:
-        click_dict[uid] = dict()
-    click_dict[uid][cid] = 2
+click_data = pd.read_csv(click_file_test).drop_duplicates().values
+view_data = pd.read_csv(view_file_test).drop_duplicates().values
+test_data = combine_data(click_data, view_data)
 
-combine_data = list(np.c_[click_data, [2] * len(click_data)])
-for uid, cid in view_data:
-    if uid in click_dict:
-        if cid not in click_dict[uid]:
-            combine_data.append([uid, cid, 1])
 
-train_data, test_data = train_test_split(
-    pd.DataFrame(combine_data), test_size=0.2, random_state=0)
+# train_data, test_data = train_test_split(
+#     pd.DataFrame(combine_data), test_size=0.2, random_state=0)
 
 train_data.to_csv('input/train.csv', index=False, header=False)
 test_data.to_csv('input/test.csv', index=False, header=False)

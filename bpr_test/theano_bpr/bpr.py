@@ -239,9 +239,9 @@ class BPR(object):
             if r < p:
                 sgd_pos_items.append(match_item)
                 sgd_neg_items.append(neg_item)
-            elif r < 2 * p:
-                sgd_pos_items.append(match_item)
-                sgd_neg_items.append(neg_item)
+            # elif r < 2 * p:
+            #     sgd_pos_items.append(match_item)
+            #     sgd_neg_items.append(neg_item)
             else:
                 sgd_pos_items.append(pos_item)
                 sgd_neg_items.append(neg_item)
