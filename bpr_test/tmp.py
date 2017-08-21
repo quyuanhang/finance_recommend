@@ -27,24 +27,24 @@ click_file = 'input/tag_click/train.csv'
 begin = time.time()
 
 
-click_data = pd.read_csv(click_file).values
-view_data = pd.read_csv(view_file).values
+click_data = pd.read_csv(click_file).drop_duplicates().values
+view_data = pd.read_csv(view_file).drop_duplicates().values
 
 click_dict = dict()
 for uid, cid in click_data:
-	if uid not in click_dict:
-		click_dict[uid] = dict()
-	click_dict[uid][cid] = 2
+    if uid not in click_dict:
+        click_dict[uid] = dict()
+    click_dict[uid][cid] = 2
 
-combine_data = np.c_[click_data, [2] * len(click_data)]
+combine_data = list(np.c_[click_data, [2] * len(click_data)])
 for uid, cid in view_data:
-	try:
-		if cid not in click_file[uid]:
-			combine_data.append([uid, cid, 1])
-	except:
-		import pdb
-		pdb.set_trace()
+    if uid in click_dict:
+        if cid not in click_dict[uid]:
+            combine_data.append([uid, cid, 1])
 
-train_data, test_data = train_test_split(combine_data)
+train_data, test_data = train_test_split(
+    pd.DataFrame(combine_data), test_size=0.2, random_state=0)
 
+train_data.to_csv('input/train.csv', index=False, header=False)
+test_data.to_csv('input/test.csv', index=False, header=False)
 

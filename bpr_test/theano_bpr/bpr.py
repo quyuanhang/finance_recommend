@@ -25,7 +25,7 @@ from collections import defaultdict
 
 class BPR(object):
 
-    def __init__(self, rank, n_users, n_items, match_weight=2, lambda_u=0.01, lambda_i=0.01, lambda_j=0.01, lambda_bias=0.0, learning_rate=0.1, sgd_weight=0.8):
+    def __init__(self, rank, n_users, n_items, match_weight=2, lambda_all=0.01, learning_rate=0.1, sgd_weight=0.8):
         """
           Creates a new object for training and testing a Bayesian
           Personalised Ranking (BPR) Matrix Factorisation 
@@ -82,10 +82,10 @@ class BPR(object):
         self._match_weight = match_weight
         self._n_users = n_users
         self._n_items = n_items
-        self._lambda_u = lambda_u
-        self._lambda_i = lambda_i
-        self._lambda_j = lambda_j
-        self._lambda_bias = lambda_bias
+        self._lambda_u = lambda_all
+        self._lambda_i = lambda_all
+        self._lambda_j = lambda_all
+        self._lambda_bias = lambda_all
         self._learning_rate = learning_rate
         self._sgd_weight = sgd_weight
         self._train_users = set()
@@ -236,10 +236,9 @@ class BPR(object):
             r = numpy.random.random()
             p = len(self._match_dict[sgd_user]) / \
                 len(self._pos_dict[sgd_user]) * self._match_weight
-
             if r < p:
                 sgd_pos_items.append(match_item)
-                sgd_neg_items.append(pos_item)
+                sgd_neg_items.append(neg_item)
             elif r < 2 * p:
                 sgd_pos_items.append(match_item)
                 sgd_neg_items.append(neg_item)
@@ -268,9 +267,10 @@ class BPR(object):
         return self.predictions(user_index)[item_index]
 
     def prediction_to_dict(self):
-        rank_dict = defaultdict(dict)
+        rank_dict = dict()
         for user in range(self._n_users):
             rank_list = self.predictions(user)
+            rank_dict[user] = dict()
             for item, rank in enumerate(rank_list):
                 rank_dict[user][item] = rank
         return rank_dict
@@ -322,7 +322,7 @@ class BPR(object):
                     elif predictions[match_item] == predictions[other_item]:
                         auc_for_user += 0.5
                         auc_match += 0.5
-            for pos_item in pos_items:
+            for pos_item in match_items | pos_items:
                 for neg_item in neg_items:
                     n += 1
                     n_pos += 1
