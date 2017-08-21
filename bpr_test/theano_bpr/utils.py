@@ -34,7 +34,7 @@ def load_data_from_csv(csv, users_to_i = {}, items_to_i = {}):
       and a mapping from item ids to integers.
     """
     raw_data = []
-    with open(csv, encoding='utf8', errors='ignore') as f:
+    with open(csv) as f:
         for line in f.readlines():
             user, item = line.strip().split(',')
             raw_data.append((user, item))
@@ -84,13 +84,13 @@ def load_data_from_array(array, users_to_i = {}, items_to_i = {}):
         i = max(items_to_i.values()) + 1
     else:
         i = 0
-    for user, item in array:
+    for user, item, rate in array:
         if user not in users_to_i:
             users_to_i[user] = u
             u += 1
         if item not in items_to_i:
             items_to_i[item] = i
             i += 1
-        data.append((users_to_i[user], items_to_i[item]))
+        data.append((users_to_i[user], items_to_i[item], rate))
     return data, users_to_i, items_to_i
 
