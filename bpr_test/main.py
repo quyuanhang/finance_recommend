@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
+# 內建库
 import sys
 sys.path.append('theano_bpr/')
+import json
+# 第三方库
 import pandas as pd
+import matplotlib.pylab as plt
+# 自建库
 import utils
 import bpr
-import matplotlib.pylab as plt
 
 # 数据文件 ==========================
-train_file = 'input/view_tag/train.csv'
-test_file = 'input/view_tag/test.csv'
+train_file = 'input/tag_click/train.csv'
+test_file = 'input/tag_click/test.csv'
 # 输出文件===========================
+prediction_file = 'output/tag_click_pre.json'
 
 train_frame = pd.read_csv(train_file)
 test_frame = pd.read_csv(test_file)
@@ -111,3 +116,31 @@ for k in range(1, 100, 5):
 plt.scatter(precision_list, recall_list)
 
 bpr.test(testing_data)
+
+# 存储预测评分
+def prediction_convert(index_pre, users_to_index, items_to_index):
+    def reverse_dict(_dict):
+        reverse = dict()
+        for user, u_id in _dict.items():
+            reverse[u_id] = user
+        return reverse
+    index_user = reverse_dict(users_to_index)
+    index_item = reverse_dict(items_to_index)
+    convert = dict()
+    for u_id, i_r_dict in index_pre.items():
+        user = index_user[u_id]
+        convert[user] = dict()
+        for item_id, rate in i_r_dict.items():
+            item = index_item[item_id]
+            convert[user][item] = float(rate)
+    return convert
+
+def save_dict(obj, file_dir):
+    f = open(file_dir, mode='w', encoding='utf8', errors='ignore')
+    s = json.dumps(obj, indent=4, ensure_ascii=False)
+    f.write(s)
+    f.close()
+
+prediction_ = prediction_convert(prediction, users_to_index, items_to_index)
+save_dict(prediction_, prediction_file)
+
