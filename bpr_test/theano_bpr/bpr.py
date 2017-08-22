@@ -228,20 +228,23 @@ class BPR(object):
         for sgd_user in sgd_users:
             pos_item = self._pos_dict[sgd_user][
                 numpy.random.randint(len(self._pos_dict[sgd_user]))]
-            match_item = self._match_dict[sgd_user][
-                numpy.random.randint(len(self._match_dict[sgd_user]))]
             neg_item = numpy.random.randint(self._n_items)
             while neg_item in set(self._pos_dict[sgd_user]) | set(self._match_dict[sgd_user]):
                 neg_item = numpy.random.randint(self._n_items)
+            if sgd_user in self._match_dict:
+                match_item = self._match_dict[sgd_user][
+                    numpy.random.randint(len(self._match_dict[sgd_user]))]
+                p = len(self._match_dict[sgd_user]) / \
+                    len(self._pos_dict[sgd_user]) * self._match_weight
+            else:
+                p = 0
             r = numpy.random.random()
-            p = len(self._match_dict[sgd_user]) / \
-                len(self._pos_dict[sgd_user]) * self._match_weight
             if r < p:
                 sgd_pos_items.append(match_item)
                 sgd_neg_items.append(neg_item)
-            # elif r < 2 * p:
-            #     sgd_pos_items.append(match_item)
-            #     sgd_neg_items.append(neg_item)
+            elif r < 2 * p:
+                sgd_pos_items.append(match_item)
+                sgd_neg_items.append(neg_item)
             else:
                 sgd_pos_items.append(pos_item)
                 sgd_neg_items.append(neg_item)
@@ -302,6 +305,7 @@ class BPR(object):
             test_data)
         auc_values, auc_match_values, auc_pos_values = [], [], []
         z = 0
+        print('testing %d users' % len(test_users & self._train_users))
         for user in test_users & self._train_users:
             auc_for_user, auc_match, auc_pos = 0.0, 0.0, 0.0
             n, n_match, n_pos = 0, 0, 0
