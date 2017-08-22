@@ -71,7 +71,7 @@ for k in range(1, 100, 5):
     precision_list.append(precision)
     recall_list.append(recall)
 
-# import matplotlib.pylab as plt
-# plt.scatter(precision_list, recall_list)
+import matplotlib.pylab as plt
+plt.scatter(precision_list, recall_list)
 
 bpr.test(testing_data)
