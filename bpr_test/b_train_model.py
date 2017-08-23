@@ -11,8 +11,8 @@ import utils
 import bpr
 
 # 数据文件 ==========================
-train_file = 'input/tag_click/train.csv'
-test_file = 'input/tag_click/test.csv'
+train_file = 'input/tag_click/train_815.csv'
+test_file = 'input/tag_click/test_815.csv'
 # 输出文件===========================
 prediction_file = 'output/tag_click_pre.json'
 
@@ -24,9 +24,9 @@ training_data, users_to_index, items_to_index = utils.load_data_from_array(
 testing_data, users_to_index, items_to_index = utils.load_data_from_array(
         test_frame.values, users_to_index, items_to_index)
 
-bpr = bpr.BPR(10, len(users_to_index.keys()), len(items_to_index.keys()))
+bpr = bpr.BPR(10, len(users_to_index.keys()), len(items_to_index.keys()), lambda_all=0.0025)
 
-bpr.train(training_data, epochs=50)
+bpr.train(training_data, epochs=100)
 
 
 prediction = bpr.prediction_to_dict()
