@@ -244,7 +244,7 @@ class BPR(object):
                 sgd_neg_items.append(neg_item)
             elif r < 2 * p:
                 sgd_pos_items.append(match_item)
-                sgd_neg_items.append(neg_item)
+                sgd_neg_items.append(pos_item)
             else:
                 sgd_pos_items.append(pos_item)
                 sgd_neg_items.append(neg_item)
@@ -305,7 +305,6 @@ class BPR(object):
             test_data)
         auc_values, auc_match_values, auc_pos_values = [], [], []
         z = 0
-        print('testing %d users' % len(test_users & self._train_users))
         for user in test_users & self._train_users:
             auc_for_user, auc_match, auc_pos = 0.0, 0.0, 0.0
             n, n_match, n_pos = 0, 0, 0

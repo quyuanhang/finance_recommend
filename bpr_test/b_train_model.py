@@ -29,9 +29,9 @@ testing_data, users_to_index, items_to_index = utils.load_data_from_array(
     test_data, users_to_index, items_to_index)
 
 bpr = bpr.BPR(rank=20, n_users=len(users_to_index),
-              n_items=len(items_to_index), match_weight=2)
+              n_items=len(items_to_index), match_weight=1, lambda_all=0.0025)
 
-bpr.train(training_data, epochs=2000) 
+bpr.train(training_data, epochs=200) 
 
 prediction = bpr.prediction_to_dict()
 

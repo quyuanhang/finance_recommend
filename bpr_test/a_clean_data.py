@@ -34,10 +34,10 @@ def combine_data(click_data, view_data):
     return pd.DataFrame(combine_data)
 
 # 数据文件
-view_file = 'input/view_tag/train.csv'
-view_file_test = 'input/view_tag/test.csv'
-click_file = 'input/tag_click/train.csv'
-click_file_test = 'input/tag_click/test.csv'
+view_file = 'input/view_tag/train_815.csv'
+view_file_test = 'input/view_tag/test_815.csv'
+click_file = 'input/tag_click/train_815.csv'
+click_file_test = 'input/tag_click/test_815.csv'
 
 # 初始化全局变量
 begin = time.time()
