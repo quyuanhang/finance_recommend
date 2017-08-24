@@ -4,10 +4,10 @@ import sys
 import json
 import random
 # 第三方库\
-import sklearn
 import numpy as np
 import pandas as pd
 import matplotlib.pylab as plt
+from sklearn import linear_model
 
 view_train_file = 'input/view_tag/train_815.csv'
 view_pre_file = 'output/tag_click_pre.json'
@@ -78,7 +78,6 @@ x = pos_neg_frame.values[:, 0]
 y = pos_neg_frame.values[:, 1]
 c = pos_neg_frame.values[:, 2]
 
-linear_model = sklearn.linear_model
 reg = linear_model.LinearRegression()
 reg.fit(pos_neg_frame.values[:, :2], pos_neg_frame.values[:, 2])
 
@@ -206,3 +205,10 @@ for user in user_set:
                 prob_num_dict[score]['neg'] += 1
 df_for_auc = pd.DataFrame(prob_num_dict).T
 df_for_auc.to_csv('output/auc_data.csv')
+
+# avg auc
+# for user in baging_prediction:
+#     auc_for_user = 0.0
+#     n = 0
+#     predictions = baging_prediction[user]
+#     pos_items = set
