@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import theano
+import heapq
 import numpy
 import theano.tensor as T
 import theano_lstm
@@ -227,12 +228,20 @@ class BPR(object):
         """
         return self.predictions(user_index)[item_index]
 
-    def prediction_to_dict(self):
-        rank_dict = defaultdict(dict)
+    def prediction_to_dict(self, topn):
+        rank_dict = dict()
+        z = 0
         for user in range(self._n_users):
-            rank_list = self.predictions(user)
-            for item, rank in enumerate(rank_list):
-                rank_dict[user][item] = rank
+            rank_list = self.top_predictions(user, topn)
+            try:
+                rank_dict[user] = dict(rank_list)
+            except:
+                import pdb
+                pdb.set_trace()
+            z += 1
+            if z % 10 == 0:
+                sys.stderr.write("\rgenerate %d predictions" % z)
+                sys.stderr.flush()            
         return rank_dict
 
 
@@ -244,10 +253,12 @@ class BPR(object):
           This won't return any of the items associated with `user_index`
           in the training set.
         """
-        return [ 
-            item_index for item_index in numpy.argsort(self.predictions(user_index)) 
-            if item_index not in self._train_dict[user_index]
-        ][::-1][:topn]
+        rank_list = enumerate(self.predictions(user_index))
+        top_list = heapq.nlargest(topn, rank_list, key=lambda x: x[1])
+        return top_list
+        # return [(item_index, rank_list[item_index]) 
+        #         for item_index in numpy.argsort(rank_list) 
+        #         if item_index not in self._train_dict[user_index]][::-1][:topn]
 
     def test(self, test_data):
         """
@@ -285,7 +296,7 @@ class BPR(object):
                     auc_for_user /= n
                     auc_values.append(auc_for_user)
                 z += 1
-                if z % 100 == 0 and len(auc_values) > 0:
+                if z % 10 == 0 and len(auc_values) > 0:
                     sys.stderr.write("\rCurrent AUC mean (%s samples): %0.5f" % (str(z), numpy.mean(auc_values)))
                     sys.stderr.flush()
         sys.stderr.write("\n")

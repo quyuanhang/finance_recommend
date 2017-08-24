@@ -11,26 +11,28 @@ import utils
 import bpr
 
 # 数据文件 ==========================
-train_file = 'input/tag_click/train_815.csv'
-test_file = 'input/tag_click/test_815.csv'
+train_file = 'input/view_com/train_815.csv'
+test_file = 'input/view_com/test_815.csv'
 # 输出文件===========================
-prediction_file = 'output/tag_click_pre.json'
+prediction_file = 'output/view_com_pre.json'
 
 train_frame = pd.read_csv(train_file)
 test_frame = pd.read_csv(test_file)
 
 training_data, users_to_index, items_to_index = utils.load_data_from_array(
-        train_frame.values)
+        train_frame.values[:, :2])
 testing_data, users_to_index, items_to_index = utils.load_data_from_array(
-        test_frame.values, users_to_index, items_to_index)
+        test_frame.values[:, :2], users_to_index, items_to_index)
 
 bpr = bpr.BPR(10, len(users_to_index.keys()), len(items_to_index.keys()), lambda_all=0.0025)
 
 bpr.train(training_data, epochs=100)
 
+#==============================================================================
+# bpr.test(testing_data)
+#==============================================================================
 
-prediction = bpr.prediction_to_dict()
-
+prediction = bpr.prediction_to_dict(500)
 
 def data_to_dict(training_data):
     train_dict = dict()
@@ -115,8 +117,6 @@ for k in range(1, 100, 5):
 
 plt.scatter(precision_list, recall_list)
 
-bpr.test(testing_data)
-
 # 存储预测评分
 def prediction_convert(index_pre, users_to_index, items_to_index):
     def reverse_dict(_dict):
@@ -128,10 +128,10 @@ def prediction_convert(index_pre, users_to_index, items_to_index):
     index_item = reverse_dict(items_to_index)
     convert = dict()
     for u_id, i_r_dict in index_pre.items():
-        user = index_user[u_id]
+        user = str(index_user[u_id])
         convert[user] = dict()
         for item_id, rate in i_r_dict.items():
-            item = index_item[item_id]
+            item = str(index_item[item_id])
             convert[user][item] = float(rate)
     return convert
 
