@@ -2,29 +2,34 @@ import numpy as np
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
 
-data = np.loadtxt('data/data.csv', delimiter=",")
-data_x = data[:, :-1]
-data_y = data[:, -1]
+# data = np.loadtxt('data/data.csv', delimiter=",")
+# data_x = data[:, :-1]
+# data_y = data[:, -1]
 
-train_x, test_x, train_y, test_y = train_test_split(data_x, data_y)
+# train_x, test_x, train_y, test_y = train_test_split(data_x, data_y)
 
-from sklearn import linear_model
-lr = linear_model.LogisticRegression()
-lr.fit(train_x, train_y)
-s1 = lr.score(test_x, test_y)
-print(s1)
+# from sklearn import linear_model
+# lr = linear_model.LogisticRegression()
+# lr.fit(train_x, train_y)
+# s1 = lr.score(test_x, test_y)
+# print(s1)
 
-from sklearn.ensemble import GradientBoostingClassifier
-gbdt = GradientBoostingClassifier()
-gbdt.fit(train_x, train_y)
-s2 = gbdt.score(test_x, test_y)
-print(s2)
+# from sklearn.ensemble import GradientBoostingClassifier
+# gbdt = GradientBoostingClassifier()
+# gbdt.fit(train_x, train_y)
+# s2 = gbdt.score(test_x, test_y)
+# print(s2)
 
 # from sklearn import svm
 # clf = svm.SVC()
 # clf.fit(train_x, train_y)
 # s3 = clf.score(test_x, test_y)
 # print(s3)
+
+train = np.loadtxt('data/train.csv', delimiter=",")
+train_x, train_y = train[:, :-1], train[:, -1]
+test = np.loadtxt('data/test.csv', delimiter=",")
+test_x, test_y = test[:, :-1], test[:, -1]
 
 from sklearn import tree
 dt_clf = tree.DecisionTreeClassifier()

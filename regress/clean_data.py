@@ -5,10 +5,11 @@ from collections import Iterable
 # 第三方包
 import pandas as pd
 import numpy as np
+import sklearn
 
 investor_file = 'data/investor.csv'
 company_file = 'data/company.csv'
-view_file = 'data/view_com_820.csv'
+view_file = 'data/view_com_828.csv'
 
 def prefer_phases(frame):
     frame = frame.copy()
@@ -57,13 +58,19 @@ investor_frame = prefer_industry(investor_frame)
 company_frame = pd.read_csv(company_file)
 view_frame = pd.read_csv(view_file)
 
+view_train, view_test = sklearn.model_selection.train_test_split(view_frame)
+
 def build_negative_smple(df_verge_attr_score, len_=1):
     expect_list = list(df_verge_attr_score.iloc[:, 0])
     job_list = list(df_verge_attr_score.iloc[:, 1])
     positive = set(zip(expect_list, job_list))
     negative = list()
     # 占用内存小的取样方法
-    p = len_ * len(positive) / (len(expect_list) * len(job_list) - len(positive))
+    if len_ == 0:
+        target_len = (len(expect_list) * len(job_list) - len(positive))
+    else:
+        target_len = len_ * len(positive)
+    p = target_len / (len(expect_list) * len(job_list) - len(positive))
     i = 0
     for e in expect_list:
         for j in job_list:
@@ -72,40 +79,34 @@ def build_negative_smple(df_verge_attr_score, len_=1):
                     negative.append([e, j, 0])
                     if i % 100 == 0:
                         sys.stderr.write("\rgenerate %d negative (%0.2f %s)" % 
-                            (len(negative), (100 * len(negative) / (len_ * len(positive))), '%'))
+                            (len(negative), (100 * len(negative) / target_len), '%'))
                         sys.stderr.flush()
                     i += 1
-    df_negative_sample = pd.DataFrame(
-        negative, columns=['id', 'cid', 'num'])
-
-    # 速度较快的取样方法
-    # for e in expect_list:
-    #     for j in job_list:
-    #         if (e, j) not in positive:
-    #             negative.append([e, j, 0])
-    # df_negative = pd.DataFrame(
-    #     negative, columns=['id', 'cid', 'num'])
-    # df_negative_sample = df_negative.sample(len_ * len(positive))
-
+    df_negative_sample = pd.DataFrame(negative, columns=['id', 'cid', 'num'])
     return df_negative_sample
 
-combine_frame = pd.merge(view_frame, investor_frame, left_on='id', right_on='user_id')
-combine_frame = pd.merge(combine_frame, company_frame, left_on='cid', right_on='attach_cid')
-combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(combine_frame['address1_x'], combine_frame['address1_y'])]
-combine_frame = combine_frame.fillna(0)
+def combine_record_feature(view_frame, investor_frame, company_frame, neg_w=1):
+    combine_frame = pd.merge(view_frame, investor_frame, left_on='id', right_on='user_id')
+    combine_frame = pd.merge(combine_frame, company_frame, left_on='cid', right_on='attach_cid')
+    combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(combine_frame['address1_x'], combine_frame['address1_y'])]
+    combine_frame = combine_frame.fillna(0)
 
-# neg_frame = build_negative_smple(combine_frame[['id_x', 'cid']])
-# neg_combine_frame = pd.merge(neg_frame, investor_frame, left_on='id', right_on='user_id')
-# neg_combine_frame = pd.merge(neg_combine_frame, company_frame, left_on='cid', right_on='id')
-# neg_combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(neg_combine_frame['address1_x'], neg_combine_frame['address1_y'])]
-# neg_combine_frame = neg_combine_frame.fillna(0)
+    neg_frame = build_negative_smple(combine_frame[['id_x', 'cid']], neg_w)
+    neg_combine_frame = pd.merge(neg_frame, investor_frame, left_on='id', right_on='user_id')
+    neg_combine_frame = pd.merge(neg_combine_frame, company_frame, left_on='cid', right_on='id')
+    neg_combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(neg_combine_frame['address1_x'], neg_combine_frame['address1_y'])]
+    neg_combine_frame = neg_combine_frame.fillna(0)
 
-# combine_frame = pd.concat([combine_frame, neg_combine_frame])
+    combine_frame = pd.concat([combine_frame, neg_combine_frame])
 
+    return combine_frame
 
-data_x = combine_frame.drop(['id_x', 'cid', 'num', 'id_y', 'user_id', 'org_id', 'id.1', 'org_id.1', 'address1_x', 'address1_y', 'id', 'attach_cid', ], axis=1)
-data_y = combine_frame['num'].apply(lambda x: 1 if x > 0 else 0).values
-data_y = combine_frame['num'].apply(lambda x: 1 if x > 1 else 0).values
+train = combine_record_feature(view_train, investor_frame, company_frame)
+data_x = train.drop(['id_x', 'cid', 'num', 'id_y', 'user_id', 'org_id', 'id.1', 'org_id.1', 'address1_x', 'address1_y', 'id', 'attach_cid', ], axis=1)
+data_y = train['num'].apply(lambda x: 1 if x > 0 else 0).values
+np.savetxt('data/train.csv', np.c_[data_x, data_y], delimiter = ',')
 
-np.savetxt('data/data.csv', np.c_[data_x, data_y], delimiter = ',')
-
+test = combine_record_feature(view_test, investor_frame, company_frame, neg_w=10000)
+data_x = test.drop(['id_x', 'cid', 'num', 'id_y', 'user_id', 'org_id', 'id.1', 'org_id.1', 'address1_x', 'address1_y', 'id', 'attach_cid', ], axis=1)
+data_y = test['num'].apply(lambda x: 1 if x > 0 else 0).values
+np.savetxt('data/test.csv', np.c_[data_x, data_y], delimiter = ',')
