@@ -8,17 +8,17 @@ data_y = data[:, -1]
 
 train_x, test_x, train_y, test_y = train_test_split(data_x, data_y)
 
-from sklearn import linear_model
-lr = linear_model.LogisticRegression()
-lr.fit(train_x, train_y)
-s1 = lr.score(test_x, test_y)
-print(s1)
+# from sklearn import linear_model
+# lr = linear_model.LogisticRegression()
+# lr.fit(train_x, train_y)
+# s1 = lr.score(test_x, test_y)
+# print(s1)
 
-from sklearn.ensemble import GradientBoostingClassifier
-gbdt = GradientBoostingClassifier()
-gbdt.fit(train_x, train_y)
-s2 = gbdt.score(test_x, test_y)
-print(s2)
+# from sklearn.ensemble import GradientBoostingClassifier
+# gbdt = GradientBoostingClassifier()
+# gbdt.fit(train_x, train_y)
+# s2 = gbdt.score(test_x, test_y)
+# print(s2)
 
 # from sklearn import svm
 # clf = svm.SVC()
@@ -27,14 +27,13 @@ print(s2)
 # print(s3)
 
 from sklearn import tree
-dt_clf = tree.DecisionTreeClassifier()
+dt_clf = tree.DecisionTreeRegressor()
 dt_clf.fit(train_x, train_y)
 s4 = dt_clf.score(test_x, test_y)
 print(s4)
 
 
-def accuracy(mod, test_x, test_y):
-	p_array = mod.predict(test_x)
+def accuracy(p_array, test_y):
 	accuracy = 0
 	for i, p in enumerate(p_array):
 		y = test_y[i]
@@ -43,10 +42,9 @@ def accuracy(mod, test_x, test_y):
 	accuracy /= len(p_array)
 	return accuracy
 
-def auc(mod, test_x, test_y):
-	p_array = mod.predict_proba(test_x)[:, 1]
-	positive_index = [i[0] for i in enumerate(test_y) if i[1] == 1]
-	negative_index = [i[0] for i in enumerate(test_y) if i[1] == 0]
+def auc(p_array, test_y, split):
+	positive_index = [i[0] for i in enumerate(test_y) if i[1] > split]
+	negative_index = [i[0] for i in enumerate(test_y) if i[1] <= split]
 	positive_score = p_array[positive_index]
 	negative_score = p_array[negative_index]
 	auc = 0.0
@@ -59,7 +57,8 @@ def auc(mod, test_x, test_y):
 	auc /= (len(positive_score) * len(negative_score))
 	return auc
 
-print(accuracy(dt_clf, test_x, test_y), auc(dt_clf, test_x, test_y))
+p_array = dt_clf.predict(test_x)
+print(accuracy(p_array, test_y), auc(p_array, test_y, 1))
 
 
 

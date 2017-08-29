@@ -8,7 +8,7 @@ import numpy as np
 
 investor_file = 'data/investor.csv'
 company_file = 'data/company.csv'
-view_file = 'data/view_com_820.csv'
+view_file = 'data/view_com_828.csv'
 
 def prefer_phases(frame):
     frame = frame.copy()
@@ -94,18 +94,18 @@ combine_frame = pd.merge(combine_frame, company_frame, left_on='cid', right_on='
 combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(combine_frame['address1_x'], combine_frame['address1_y'])]
 combine_frame = combine_frame.fillna(0)
 
-# neg_frame = build_negative_smple(combine_frame[['id_x', 'cid']])
-# neg_combine_frame = pd.merge(neg_frame, investor_frame, left_on='id', right_on='user_id')
-# neg_combine_frame = pd.merge(neg_combine_frame, company_frame, left_on='cid', right_on='id')
-# neg_combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(neg_combine_frame['address1_x'], neg_combine_frame['address1_y'])]
-# neg_combine_frame = neg_combine_frame.fillna(0)
+neg_frame = build_negative_smple(combine_frame[['id_x', 'cid']], 3)
+neg_combine_frame = pd.merge(neg_frame, investor_frame, left_on='id', right_on='user_id')
+neg_combine_frame = pd.merge(neg_combine_frame, company_frame, left_on='cid', right_on='id')
+neg_combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(neg_combine_frame['address1_x'], neg_combine_frame['address1_y'])]
+neg_combine_frame = neg_combine_frame.fillna(0)
 
-# combine_frame = pd.concat([combine_frame, neg_combine_frame])
+combine_frame = pd.concat([combine_frame, neg_combine_frame])
 
 
-data_x = combine_frame.drop(['id_x', 'cid', 'num', 'id_y', 'user_id', 'org_id', 'id.1', 'org_id.1', 'address1_x', 'address1_y', 'id', 'attach_cid', ], axis=1)
-data_y = combine_frame['num'].apply(lambda x: 1 if x > 0 else 0).values
-data_y = combine_frame['num'].apply(lambda x: 1 if x > 1 else 0).values
+data_x = combine_frame.drop(['id_x', 'cid', 'num', 'id_y', 'user_id', 'org_id', 'id.1', 'org_id.1', 'address1_x', 'address1_y', 'id', 'attach_cid'], axis=1)
+data_y = combine_frame['num'].apply(lambda x: 2 if x > 1 else x).values
+# data_y = combine_frame['num'].apply(lambda x: 1 if x > 1 else 0).values
 
 np.savetxt('data/data.csv', np.c_[data_x, data_y], delimiter = ',')
 
