@@ -57,36 +57,20 @@ investor_frame = prefer_industry(investor_frame)
 company_frame = pd.read_csv(company_file)
 view_frame = pd.read_csv(view_file)
 
-def build_negative_smple(df_verge_attr_score, len_=1):
-    expect_list = list(df_verge_attr_score.iloc[:, 0])
-    job_list = list(df_verge_attr_score.iloc[:, 1])
-    positive = set(zip(expect_list, job_list))
-    negative = list()
-    # 占用内存小的取样方法
-    p = len_ * len(positive) / (len(expect_list) * len(job_list) - len(positive))
-    i = 0
-    for e in expect_list:
-        for j in job_list:
-            if (e, j) not in positive:
-                if random.random() < p:
-                    negative.append([e, j, 0])
-                    if i % 100 == 0:
-                        sys.stderr.write("\rgenerate %d negative (%0.2f %s)" % 
-                            (len(negative), (100 * len(negative) / (len_ * len(positive))), '%'))
-                        sys.stderr.flush()
-                    i += 1
-    df_negative_sample = pd.DataFrame(
-        negative, columns=['id', 'cid', 'num'])
-
-    # 速度较快的取样方法
-    # for e in expect_list:
-    #     for j in job_list:
-    #         if (e, j) not in positive:
-    #             negative.append([e, j, 0])
-    # df_negative = pd.DataFrame(
-    #     negative, columns=['id', 'cid', 'num'])
-    # df_negative_sample = df_negative.sample(len_ * len(positive))
-
+def fast_sample(posi_frame, _len=1):
+    user_array = posi_frame.iloc[:, 0].values
+    item_array = posi_frame.iloc[:, 1].values
+    positive_samples = set(zip(user_array, item_array))
+    target_len = round(_len * len(positive_samples))
+    negative_samples = np.array([[0, 0]])
+    while len(negative_samples) < target_len:
+        negative_users = user_array[np.random.randint(len(user_array), size=(2 * (target_len - len(negative_samples))))]
+        negative_items = item_array[np.random.randint(len(user_array), size=(2 * (target_len - len(negative_samples))))]
+        negative_set = set(zip(negative_users, negative_items)) - positive_samples
+        negative_samples_tmp = np.array(list(negative_set))[:(target_len - len(negative_samples))]
+        negative_samples = np.r_[negative_samples, negative_samples_tmp]
+    df_negative_sample = pd.DataFrame(negative_samples[1:, :], columns=['id', 'cid'])
+    df_negative_sample['num'] = 0
     return df_negative_sample
 
 combine_frame = pd.merge(view_frame, investor_frame, left_on='id', right_on='user_id')
@@ -94,18 +78,21 @@ combine_frame = pd.merge(combine_frame, company_frame, left_on='cid', right_on='
 combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(combine_frame['address1_x'], combine_frame['address1_y'])]
 combine_frame = combine_frame.fillna(0)
 
-neg_frame = build_negative_smple(combine_frame[['id_x', 'cid']], 3)
-neg_combine_frame = pd.merge(neg_frame, investor_frame, left_on='id', right_on='user_id')
-neg_combine_frame = pd.merge(neg_combine_frame, company_frame, left_on='cid', right_on='id')
-neg_combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(neg_combine_frame['address1_x'], neg_combine_frame['address1_y'])]
-neg_combine_frame = neg_combine_frame.fillna(0)
+# neg_frame = fast_sample(combine_frame[['id_x', 'cid']], 3)
+# neg_combine_frame = pd.merge(neg_frame, investor_frame, left_on='id', right_on='user_id')
+# neg_combine_frame = pd.merge(neg_combine_frame, company_frame, left_on='cid', right_on='attach_cid')
+# neg_combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(neg_combine_frame['address1_x'], neg_combine_frame['address1_y'])]
+# neg_combine_frame = neg_combine_frame.fillna(0)
 
-combine_frame = pd.concat([combine_frame, neg_combine_frame])
+# combine_frame = pd.concat([combine_frame, neg_combine_frame])
 
 
-data_x = combine_frame.drop(['id_x', 'cid', 'num', 'id_y', 'user_id', 'org_id', 'id.1', 'org_id.1', 'address1_x', 'address1_y', 'id', 'attach_cid'], axis=1)
-data_y = combine_frame['num'].apply(lambda x: 2 if x > 1 else x).values
+data = combine_frame.drop(['id_x', 'cid', 'num', 'id_y', 'user_id', 'org_id', 'id.1', 'org_id.1', 'address1_x', 'address1_y', 'id', 'attach_cid'], axis=1)
+data['y'] = combine_frame['num'].apply(lambda x: 2 if x > 1 else x).values
+# data_y = combine_frame['num'].apply(lambda x: 2 if x > 1 else x).values
 # data_y = combine_frame['num'].apply(lambda x: 1 if x > 1 else 0).values
 
-np.savetxt('data/data.csv', np.c_[data_x, data_y], delimiter = ',')
+# np.savetxt('data/data.csv', np.c_[data_x, data_y], delimiter = ',')
+
+data.to_csv('data/data.csv', index=False)
 
