@@ -78,13 +78,13 @@ combine_frame = pd.merge(combine_frame, company_frame, left_on='cid', right_on='
 combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(combine_frame['address1_x'], combine_frame['address1_y'])]
 combine_frame = combine_frame.fillna(0)
 
-# neg_frame = fast_sample(combine_frame[['id_x', 'cid']], 3)
-# neg_combine_frame = pd.merge(neg_frame, investor_frame, left_on='id', right_on='user_id')
-# neg_combine_frame = pd.merge(neg_combine_frame, company_frame, left_on='cid', right_on='attach_cid')
-# neg_combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(neg_combine_frame['address1_x'], neg_combine_frame['address1_y'])]
-# neg_combine_frame = neg_combine_frame.fillna(0)
+neg_frame = fast_sample(combine_frame[['id_x', 'cid']], 3)
+neg_combine_frame = pd.merge(neg_frame, investor_frame, left_on='id', right_on='user_id')
+neg_combine_frame = pd.merge(neg_combine_frame, company_frame, left_on='cid', right_on='attach_cid')
+neg_combine_frame['address'] = [1 if i[0] == i[1] else 0 for i in zip(neg_combine_frame['address1_x'], neg_combine_frame['address1_y'])]
+neg_combine_frame = neg_combine_frame.fillna(0)
 
-# combine_frame = pd.concat([combine_frame, neg_combine_frame])
+combine_frame = pd.concat([combine_frame, neg_combine_frame])
 
 
 data = combine_frame.drop(['id_x', 'cid', 'num', 'id_y', 'user_id', 'org_id', 'id.1', 'org_id.1', 'address1_x', 'address1_y', 'id', 'attach_cid'], axis=1)

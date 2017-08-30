@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import train_test_split
+from sklearn.cross_validation import cross_val_score
+from sklearn.cross_validation import train_test_split
 
 def accuracy(p_array, test_y):
 	accuracy = 0
@@ -59,7 +59,7 @@ print(auc(p_array, test_y, 1))
 
 from sklearn.ensemble import GradientBoostingRegressor
 gbr = GradientBoostingRegressor()
-gbr.set_params(min_samples_leaf=5, max_depth=10000)
+gbr.set_params(min_samples_leaf=5, max_depth=None, n_estimators=10)
 gbr.fit(train_x, train_y)
 s2 = gbr.score(test_x, test_y)
 print(s2)
