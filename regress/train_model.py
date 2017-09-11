@@ -13,8 +13,8 @@ def accuracy(p_array, test_y):
 	return accuracy
 
 def auc(p_array, test_y, split):
-	positive_index = [i[0] for i in enumerate(test_y) if i[1] > split]
-	negative_index = [i[0] for i in enumerate(test_y) if i[1] <= split]
+	positive_index = [i[0] for i in enumerate(test_y) if i[1] >= split]
+	negative_index = [i[0] for i in enumerate(test_y) if i[1] < split]
 	positive_score = p_array[positive_index]
 	negative_score = p_array[negative_index]
 	auc = 0.0
@@ -40,36 +40,59 @@ train_x, test_x, train_y, test_y = train_test_split(data_x, data_y)
 # lr.fit(train_x, train_y)
 # s1 = lr.score(test_x, test_y)
 # print(s1)
+# p_array = lr.predict(test_x)
+# print(auc(p_array, test_y, 1))
+
 
 # from sklearn import svm
 # clf = svm.SVC()
 # clf.fit(train_x, train_y)
 # s3 = clf.score(test_x, test_y)
 # print(s3)
+# p_array = clf.predict(test_x)
+# print(auc(p_array, test_y, 1))
+
+
+# from sklearn import tree
+# dt_clf = tree.DecisionTreeRegressor()
+# dt_clf.set_params(min_samples_leaf=5)
+# dt_clf.fit(train_x, train_y)
+# s4 = dt_clf.score(test_x, test_y)
+# print(s4)
+# p_array = dt_clf.predict(test_x)
+# print(auc(p_array, test_y, 1))
+
+# from sklearn.ensemble import GradientBoostingRegressor
+# gbr = GradientBoostingRegressor()
+# gbr.set_params(min_samples_leaf=5, max_depth=None, n_estimators=10)
+# gbr.fit(train_x, train_y)
+# s2 = gbr.score(test_x, test_y)
+# print(s2)
+
+# p_array = gbr.predict(test_x)
+# print(auc(p_array, test_y, 1))
+
+# from sklearn.ensemble import RandomForestRegressor
+# rfr = RandomForestRegressor(min_samples_leaf=5)
+# rfr.fit(train_x, train_y)
+# s5 = rfr.score(test_x, test_y)
+# p_array = rfr.predict(test_x)
+# print(auc(p_array, test_y, 1))
+
+from sklearn.neural_network import MLPClassifier
+mlp = MLPClassifier()
+mlp.fit(train_x, train_y)
+mlp.score(test_x, test_y)
+p_array = mlp.predict(test_x)
+print(auc(p_array, test_y, 1))
+
 
 from sklearn import tree
-dt_clf = tree.DecisionTreeRegressor()
-dt_clf.set_params(min_samples_leaf=5)
+dt_clf = tree.DecisionTreeClassifier()
+dt_clf.set_params()
 dt_clf.fit(train_x, train_y)
 s4 = dt_clf.score(test_x, test_y)
 print(s4)
-
 p_array = dt_clf.predict(test_x)
 print(auc(p_array, test_y, 1))
-
-from sklearn.ensemble import GradientBoostingRegressor
-gbr = GradientBoostingRegressor()
-gbr.set_params(min_samples_leaf=5, max_depth=None, n_estimators=10)
-gbr.fit(train_x, train_y)
-s2 = gbr.score(test_x, test_y)
-print(s2)
-
-p_array = gbr.predict(test_x)
-print(auc(p_array, test_y, 1))
-
-from sklearn.ensemble import RandomForestRegressor
-rfr = RandomForestRegressor(min_samples_leaf=5)
-rfr.fit(train_x, train_y)
-# s5 = rfr.score(test_x, test_y)
-p_array = rfr.predict(test_x)
-print(auc(p_array, test_y, 2))
+w4 = pd.DataFrame(list(zip(dt_clf.feature_importances_, frame.columns)))

@@ -7,8 +7,8 @@ import numpy
 import pandas as pd
 
 # 数据文件 ==========================
-train_file = 'input/view_tag/train.csv'
-test_file = 'input/view_tag/test.csv'
+train_file = 'input/view_com/train_815.csv'
+test_file = 'input/view_com/test_815.csv'
 # 输出文件===========================
 
 
@@ -191,11 +191,13 @@ begin = datetime.datetime.now()
 print(auc(train_dict, prediction, test_dict))
 
 
-print('标准测试')
-print(evaluate(prediction, test_dict, top=5, mode='base'))
-
-print('覆盖测试')
-print(evaluate(prediction, test_dict, top=5, mode='max'))
+#==============================================================================
+# print('标准测试')
+# print(evaluate(prediction, test_dict, top=5, mode='base'))
+# 
+# print('覆盖测试')
+# print(evaluate(prediction, test_dict, top=5, mode='max'))
+#==============================================================================
 
 precision_list, recall_list = [], []
 for k in range(1, 100):
