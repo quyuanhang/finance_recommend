@@ -79,20 +79,19 @@ train_x, test_x, train_y, test_y = train_test_split(data_x, data_y)
 # p_array = rfr.predict(test_x)
 # print(auc(p_array, test_y, 1))
 
-from sklearn.neural_network import MLPClassifier
-mlp = MLPClassifier()
-mlp.fit(train_x, train_y)
-mlp.score(test_x, test_y)
-p_array = mlp.predict(test_x)
-print(auc(p_array, test_y, 1))
-
+# from sklearn.neural_network import MLPClassifier
+# mlp = MLPClassifier()
+# mlp.fit(train_x, train_y)
+# mlp.score(test_x, test_y)
+# p_array = mlp.predict(test_x)
+# print(auc(p_array, test_y, 1))
 
 from sklearn import tree
 dt_clf = tree.DecisionTreeClassifier()
-dt_clf.set_params()
+dt_clf.set_params(min_samples_leaf=5)
 dt_clf.fit(train_x, train_y)
 s4 = dt_clf.score(test_x, test_y)
 print(s4)
 p_array = dt_clf.predict(test_x)
-print(auc(p_array, test_y, 1))
 w4 = pd.DataFrame(list(zip(dt_clf.feature_importances_, frame.columns)))
+print(auc(p_array, test_y, 1))

@@ -98,10 +98,6 @@ class industryLab(object):
         return industry
 
 
-
-
-
-
 # 用户特征处理
 investor_frame = pd.read_csv(investor_file).drop_duplicates(subset='user_id')
 investor_frame = prefer_phases(investor_frame)
@@ -112,6 +108,28 @@ investor_frame = prefer_phases(investor_frame)
 company_frame = pd.read_csv(company_file).drop_duplicates(subset='attach_cid')
 # company_frame = prefer_industry(company_frame, 'industry1')
 # company_frame = company_frame.fillna(0).astype('int')
+cid_lib = CidLib(company_frame.iloc[:, :2])
+
+# bp行为
+bp_frame = pd.read_csv(bp_file)
+bp_frame['cid'] = bp_frame['crm_id'].map(cid_lib.convert_id_to_cid)
+bp_frame['cid'] = bp_frame['company_id'].fillna(0) + bp_frame['cid']
+bp_frame.drop(['crm_id', 'company_id'], axis=1, inplace=True)
+bp_frame = bp_frame.reindex(columns=['id', 'cid', 'num'])
+
+# workbench行为
+wb_frame = pd.read_csv(wb_file)
+wb_frame['cid'] = wb_frame['ccid'].map(cid_lib.convert_id_to_cid)
+wb_frame.drop(['ccid'], axis=1, inplace=True)
+wb_frame = wb_frame.reindex(columns=['id', 'cid', 'num'])
+
+investor_frame = prefer_industry(investor_frame, 'prefer_industry')
+investor_frame = investor_frame.fillna(0).astype('int')
+
+# 公司特征处理
+company_frame = pd.read_csv(company_file).drop_duplicates(subset='attach_cid')
+company_frame = prefer_industry(company_frame, 'industry1')
+company_frame = company_frame.fillna(0).astype('int')
 cid_lib = CidLib(company_frame.iloc[:, :2])
 
 # bp行为
@@ -207,6 +225,7 @@ combine_frame['have_match_tag_industry'] = user_view_com_on_tag.sum(axis=1)
 
 data = combine_frame.drop(['id_x', 'cid', 'num', 'id_y', 'user_id', 'org_id', 'id.1', 'org_id.1', 'address1_x', 'address1_y', 'id', 'attach_cid', 'prefer_industry'], axis=1)
 data = data.astype(int)
+data = combine_frame.drop(['id_x', 'cid', 'num', 'id_y', 'user_id', 'org_id', 'id.1', 'org_id.1', 'address1_x', 'address1_y', 'id', 'attach_cid'], axis=1)
 # data['y'] = combine_frame['num'].map(lambda x: 2 if x >= 2 else x).values
 data['y'] = combine_frame['num'].map(lambda x: 1 if x >= 1 else x).values
 
